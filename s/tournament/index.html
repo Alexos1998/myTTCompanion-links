@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turnier - myTischtennis Companion</title>
+<meta name="description" content="Dieses Turnier in der App myTischtennis Companion öffnen.">
+
+<!-- Open Graph is scraped server side, so a chat app only ever sees these
+     type-level values. Per-entity previews would need server-side rendering;
+     the link format is chosen so that can be added later without changing it. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="myTischtennis Companion">
+<meta property="og:title" content="Turnier in myTischtennis Companion öffnen">
+<meta property="og:description" content="Dieses Turnier in der App myTischtennis Companion öffnen.">
+
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-type="tournament">
+<main>
+  <div class="card">
+    <p class="kicker">Turnier</p>
+    <h1>Turnier</h1>
+    <p class="entity" data-entity-name hidden></p>
+    <p>Dieses Turnier in der App myTischtennis Companion öffnen.</p>
+
+    <a class="button primary" data-action="open-app" href="#">In der App öffnen</a>
+    <a class="button" data-action="open-web" href="#">Auf mytischtennis.de ansehen</a>
+    <a class="button" data-action="install" href="#">App installieren</a>
+    <a class="button debug" data-action="open-debug" href="#" hidden>In der Debug-App öffnen</a>
+  </div>
+  <footer>
+    <a href="../../">myTischtennis Companion</a>
+  </footer>
+</main>
+<script src="../../assets/link.js"></script>
+</body>
+</html>
