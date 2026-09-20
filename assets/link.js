@@ -41,20 +41,38 @@ function appUrl(scheme) {
 }
 
 /**
+ * The click-tt player id (`P<hex><checksum>`) derived from the numeric id.
+ *
+ * Mirrors `PlayerIdParser.encode` in the app, which in turn mirrors
+ * mytischtennis' own JS: rotate left by 3 in 32 bits, then a two-digit hex
+ * checksum over the decimal digits. A link carries only the numeric id, so
+ * both sides derive this rather than transporting a value that could disagree
+ * with the id next to it.
+ */
+function clickTtPlayerId(numericId) {
+  const value = numericId >>> 0;
+  const rotated = ((value << 3) | (value >>> 29)) >>> 0;
+
+  let sum = 0;
+  for (const digit of String(numericId)) sum += Number(digit);
+  const checksum = (sum % 256).toString(16).padStart(2, '0').toUpperCase();
+
+  return 'P' + rotated.toString(16).toUpperCase() + checksum;
+}
+
+/**
  * The equivalent page on mytischtennis.de, or null when the coordinates cannot
  * address a public page. Only the types that are actually wired return a URL.
  */
 function webUrl(type, params) {
-  const season = params.get('s') || '';
-
   if (type === 'player') {
-    const pid = params.get('pid');
-    if (!pid) return null;
+    const id = Number(params.get('id'));
+    if (!Number.isInteger(id) || id <= 0) return null;
+
     // Same shape the app fetches, minus the `?_data=` loader suffix. `XXXX` is
     // what the site itself accepts as a wildcard association segment.
-    const org = params.get('org') || 'XXXX';
-    const tf = season || 'aktuell';
-    return `https://www.mytischtennis.de/click-tt/${org}/${tf}/spieler/${pid}/spielerportrait/single`;
+    const season = params.get('s') || 'aktuell';
+    return `https://www.mytischtennis.de/click-tt/XXXX/${season}/spieler/${clickTtPlayerId(id)}/spielerportrait/single`;
   }
 
   return null;
@@ -62,7 +80,11 @@ function webUrl(type, params) {
 
 /** Fills in the entity name when the link carries one, so the page is not anonymous. */
 function applyName(params) {
-  const name = (params.get('n') || '').trim().slice(0, 80);
+  const name = [params.get('fn'), params.get('ln')]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+    .slice(0, 80);
   if (!name) return;
 
   const target = document.querySelector('[data-entity-name]');
