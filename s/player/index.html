@@ -5,19 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spielerprofil - myTischtennis Companion</title>
 <meta name="description" content="Dieses Spielerprofil in der App myTischtennis Companion öffnen.">
+<meta name="theme-color" content="#71d2d7">
+
+<link rel="icon" type="image/png" href="../../assets/favicon.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 
 <!-- Open Graph is scraped server side, so a chat app only ever sees these
      type-level values. Per-entity previews would need server-side rendering;
-     the link format is chosen so that can be added later without changing it. -->
+     the link format is chosen so that can be added later without changing it.
+     og:image must be absolute: a scraper does not resolve relative paths. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="myTischtennis Companion">
 <meta property="og:title" content="Spielerprofil in myTischtennis Companion öffnen">
 <meta property="og:description" content="Dieses Spielerprofil in der App myTischtennis Companion öffnen.">
+<meta property="og:image" content="https://alexos1998.github.io/myTTCompanion-links/assets/icon.png">
+<meta name="twitter:card" content="summary">
 
 <link rel="stylesheet" href="../../assets/style.css">
 </head>
 <body data-type="player">
 <main>
+  <div class="brand">
+    <img src="../../assets/icon.png" alt="" width="40" height="40">
+    <span>myTischtennis Companion</span>
+  </div>
   <div class="card">
     <p class="kicker">Spieler</p>
     <h1>Spielerprofil</h1>
@@ -30,7 +41,9 @@
     <a class="button debug" data-action="open-debug" href="#" hidden>In der Debug-App öffnen</a>
   </div>
   <footer>
-    <a href="../../">myTischtennis Companion</a>
+    <a href="../../">Start</a> &middot;
+    <a href="https://alexos1998.github.io/myTTCompanion-support/">Support</a> &middot;
+    <a href="https://alexos1998.github.io/myTTCompanion-legal/">Datenschutz</a>
   </footer>
 </main>
 <script src="../../assets/link.js"></script>
