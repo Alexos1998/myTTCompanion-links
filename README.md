@@ -39,14 +39,14 @@ links, so a newer app can ship new parameters without touching this repo.
 
 ## What a page does
 
-1. **In der App öffnen** rebuilds the same link as `myttr://s/<type>/?<query>`.
+1. **In der App öffnen** rebuilds the same link as `myttcompanion://s/<type>/?<query>`.
    The `/myTTCompanion-links` prefix is stripped, so the app parses one grammar
    regardless of transport, and moving the site never changes the parser.
 2. **Auf mytischtennis.de ansehen** builds the equivalent public page, currently
    for `player` only.
 3. **App installieren** goes to the Play Store listing.
 4. **In der Debug-App öffnen** appears only when the URL ends in `#debug` and
-   uses the `myttr-debug://` scheme, so a test link can address the debug build
+   uses the `myttcompanion-debug://` scheme, so a test link can address the debug build
    while both variants are installed.
 
 No automatic redirect into the custom scheme: an unhandled scheme raises a modal
@@ -75,7 +75,7 @@ No build step, no Jekyll.
 ```sh
 # Debug build, custom scheme, deterministic even with both variants installed
 adb shell am start -a android.intent.action.VIEW \
-  -d "myttr-debug://s/player/?pid=NU1234567&id=98765&v=portrait&n=Max+Mustermann"
+  -d "myttcompanion-debug://s/player/?pid=NU1234567&id=98765&v=portrait&n=Max+Mustermann"
 
 # https link against the debug package explicitly
 adb shell am start -a android.intent.action.VIEW \

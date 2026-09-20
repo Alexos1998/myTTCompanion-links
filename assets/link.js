@@ -19,8 +19,8 @@
 /** GitHub project page prefix. Not part of the link grammar the app parses. */
 const BASE_PATH = '/myTTCompanion-links';
 
-const APP_SCHEME = 'myttr';
-const DEBUG_SCHEME = 'myttr-debug';
+const APP_SCHEME = 'myttcompanion';
+const DEBUG_SCHEME = 'myttcompanion-debug';
 const STORE_URL = 'https://play.google.com/store/apps/details?id=de.ajeddeloh.myttcompanion';
 
 /** Reads the coordinates of the current link. */
@@ -29,7 +29,7 @@ function coordinates() {
 }
 
 /**
- * The same link as a custom-scheme URL: `myttr://s/player/?org=...`.
+ * The same link as a custom-scheme URL: `myttcompanion://s/player/?org=...`.
  *
  * The hosting prefix is stripped, so the app sees one grammar (`s/<type>/?...`)
  * whether the link arrived as an https App Link or as a custom scheme, and moving
