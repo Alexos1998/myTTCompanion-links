@@ -7,13 +7,16 @@
  * app is missing, App-Links verification has not happened yet, or the link was
  * opened in a desktop browser.
  *
- * Three exits are offered, in that order of usefulness:
- *   1. open the app through the custom scheme (works without any domain verification)
+ * The page tries the app itself, immediately, through the custom scheme, and only
+ * reveals its buttons when that demonstrably did not work. "Did not work" cannot be
+ * observed directly - no browser reports whether a scheme was handled - so it is
+ * inferred: if the app opens, this page loses visibility within a moment. Still
+ * visible after [FALLBACK_DELAY_MS], and the app is not there.
+ *
+ * Three exits are then offered, in that order of usefulness:
+ *   1. retry the app through the custom scheme
  *   2. look at the same thing on mytischtennis.de
  *   3. install the app
- *
- * No automatic scheme redirect: on iOS an unhandled custom scheme raises a modal
- * error, which is worse than a button the user does not press.
  */
 
 /** GitHub project page prefix. Not part of the link grammar the app parses. */
@@ -22,6 +25,13 @@ const BASE_PATH = '/myTTCompanion-links';
 const APP_SCHEME = 'myttcompanion';
 const DEBUG_SCHEME = 'myttcompanion-debug';
 const STORE_URL = 'https://play.google.com/store/apps/details?id=de.ajeddeloh.myttcompanion';
+
+/**
+ * How long to wait before declaring the app absent. Long enough for Android's
+ * intent resolution and the app's cold start to take the page out of view, short
+ * enough that a visitor without the app is not left staring at a spinner.
+ */
+const FALLBACK_DELAY_MS = 1500;
 
 /** Reads the coordinates of the current link. */
 function coordinates() {
@@ -95,9 +105,52 @@ function applyName(params) {
   document.title = name + ' - myTischtennis Companion';
 }
 
+/**
+ * Reveals the buttons. Called when the app did not take over, and when the user
+ * comes back from it, so the page is never left showing a spinner forever.
+ */
+function showFallback() {
+  document.body.dataset.state = 'fallback';
+}
+
+/**
+ * Hands the link to the app, then waits to see whether that worked.
+ *
+ * `location.href` rather than a click on a hidden anchor: a scheme navigation
+ * that nothing handles leaves the document untouched in every current browser,
+ * so the page survives to show its fallback.
+ */
+function launchApp(scheme) {
+  let settled = false;
+
+  const settle = () => {
+    if (settled) return;
+    settled = true;
+    window.clearTimeout(timer);
+  };
+
+  // The app opening takes this page out of view. Any of these firing means the
+  // launch worked, so the fallback must not flash up behind the app.
+  const onHidden = () => {
+    if (document.visibilityState === 'hidden') settle();
+  };
+  document.addEventListener('visibilitychange', onHidden);
+  window.addEventListener('pagehide', settle);
+  window.addEventListener('blur', settle);
+
+  const timer = window.setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    showFallback();
+  }, FALLBACK_DELAY_MS);
+
+  window.location.href = appUrl(scheme);
+}
+
 function wire() {
   const type = document.body.dataset.type;
   const params = coordinates();
+  const debugRequested = window.location.hash === '#debug';
 
   applyName(params);
 
@@ -120,13 +173,40 @@ function wire() {
   // Debug build. Both variants can claim the same host, so a tapped link offers a
   // chooser; this is the deterministic way in while testing. Hidden unless the link
   // asks for it with `#debug`, so a normal recipient never sees it.
-  if (window.location.hash === '#debug') {
+  if (debugRequested) {
     const debug = document.querySelector('[data-action="open-debug"]');
     if (debug) {
       debug.href = appUrl(DEBUG_SCHEME);
       debug.hidden = false;
     }
   }
+
+  // The landing page itself addresses nothing, so it has nothing to hand over.
+  if (!document.querySelector('[data-launching]')) {
+    showFallback();
+    return;
+  }
+
+  // Coming back from the app, or navigating back to this page, must not bounce
+  // the visitor straight out again.
+  if (sessionStorage.getItem(launchKey()) === 'done') {
+    showFallback();
+    return;
+  }
+  sessionStorage.setItem(launchKey(), 'done');
+
+  launchApp(debugRequested ? DEBUG_SCHEME : APP_SCHEME);
 }
+
+/** One launch per link per tab session. */
+function launchKey() {
+  return 'launched:' + window.location.pathname + window.location.search + window.location.hash;
+}
+
+// A page restored from the back/forward cache re-runs neither the script nor
+// DOMContentLoaded, so its spinner would stay frozen. `pageshow` covers that.
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) showFallback();
+});
 
 document.addEventListener('DOMContentLoaded', wire);

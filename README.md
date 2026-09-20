@@ -39,18 +39,33 @@ links, so a newer app can ship new parameters without touching this repo.
 
 ## What a page does
 
-1. **In der App öffnen** rebuilds the same link as `myttcompanion://s/<type>/?<query>`.
-   The `/myTTCompanion-links` prefix is stripped, so the app parses one grammar
-   regardless of transport, and moving the site never changes the parser.
+On load it hands the link straight to the app as
+`myttcompanion://s/<type>/?<query>` and shows nothing but a spinner. No browser
+reports whether a scheme was handled, so success is inferred from the page losing
+visibility: `visibilitychange`, `pagehide` or `blur` within 1.5 seconds means the
+app took over, and the buttons are never revealed. Still visible after that, and
+the app is not installed, so the page switches to its fallback:
+
+1. **In der App öffnen** retries the same scheme link.
 2. **Auf mytischtennis.de ansehen** builds the equivalent public page, currently
    for `player` only.
 3. **App installieren** goes to the Play Store listing.
-4. **In der Debug-App öffnen** appears only when the URL ends in `#debug` and
-   uses the `myttcompanion-debug://` scheme, so a test link can address the debug build
-   while both variants are installed.
+4. **In der Debug-App öffnen** appears only when the URL ends in `#debug` and uses
+   the `myttcompanion-debug://` scheme, so a test link can address the debug build
+   while both variants are installed. With `#debug` the automatic launch targets
+   the debug build too.
 
-No automatic redirect into the custom scheme: an unhandled scheme raises a modal
-error in iOS Safari, which is worse than an unpressed button.
+The launch happens once per link per tab session (`sessionStorage`), so returning
+from the app, or navigating back, does not bounce the visitor straight out again.
+A page restored from the back/forward cache re-runs no script, which `pageshow`
+handles by revealing the fallback.
+
+With JavaScript disabled nothing sets the state and the buttons are visible: the
+markup defaults to the safe side.
+
+The `/myTTCompanion-links` prefix is stripped when building the scheme URL, so the
+app parses one grammar regardless of transport and moving the site never changes
+the parser.
 
 ## Why the well-known files are not in this repo
 
