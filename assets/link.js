@@ -100,6 +100,9 @@ function webUrl(type, params) {
     return clickTt(`XXXX/${season}/spieler/${clickTtPlayerId(numericId)}/spielerportrait/single`);
   }
 
+  // A search carries no org, so it has to be answered before the guard below.
+  if (type === 'search') return rankingUrl(params);
+
   if (!org) return null;
 
   if (type === 'league' && id) {
@@ -141,6 +144,53 @@ function webUrl(type, params) {
   // A match report has no public click-tt page: the app reads it from the live
   // API, which answers JSON only.
   return null;
+}
+
+/**
+ * The shared search as the public andro-Rangliste page, mirroring what the app
+ * builds in `RankingFetcher._buildSearchUrl`. A link carries only the filters
+ * that differ from the search form's defaults, so the defaults are filled back
+ * in here exactly as the app fills them.
+ *
+ * Null for the shapes the site cannot show in one page: several clubs or any
+ * selected players are several rankings in the app, merged and re-ranked, and
+ * silently showing one of them would be a different result than was shared.
+ */
+function rankingUrl(params) {
+  const clubs = (params.get('cl') || '').split(',').filter(Boolean);
+  if (params.get('pl') || clubs.length > 1) return null;
+
+  const base = 'https://www.mytischtennis.de/rankings/andro-rangliste';
+  const league = params.get('lg');
+  // A league ranking replaces every other filter, upstream as well as in the app.
+  if (league) return `${base}?group-id=${encodeURIComponent(league)}&current-ranking=yes`;
+
+  const query = new URLSearchParams();
+  query.set('continent', params.get('c') || 'Europa');
+  query.set('country', params.get('co') || 'Deutschland');
+  if (params.get('de') === '1') query.set('germans-ranking', 'on');
+  if (params.get('all') === '1') query.set('all-players', 'on');
+  query.set('gender', params.get('g') || 'all');
+
+  if (params.get('as')) {
+    query.set('as', params.get('as'));
+    if (params.get('di')) query.set('di', params.get('di'));
+    if (params.get('ar')) query.set('area', params.get('ar'));
+  }
+
+  query.set('birth-range', `${params.get('bf') || '1925'};${params.get('bt') || '2020'}`);
+  query.set('ttr-range', `${params.get('rf') || '100'};${params.get('rt') || '3000'}`);
+  query.set('current-ranking', params.get('q') === '1' ? 'no' : 'yes');
+
+  if (clubs.length === 1) {
+    const [clubId, org] = clubs[0].split('.');
+    if (clubId && org) {
+      query.set('clubnr', clubId);
+      query.set('fednickname', org);
+    }
+  }
+
+  return `${base}?${query.toString()}&results-per-page=100`;
 }
 
 /**
