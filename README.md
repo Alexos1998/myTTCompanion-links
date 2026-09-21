@@ -21,21 +21,30 @@ https://alexos1998.github.io/myTTCompanion-links/s/<type>/?<coordinates>
 and every type can carry its own Open Graph preview. The coordinates live in the
 query string, because a static host cannot produce a file per entity.
 
-Implemented today:
+All six types are live:
 
-| Type | Coordinates | Status |
-|---|---|---|
-| `player` | `pid` click-tt player id, `id` numeric statistics id, `v` view, `n` display name, `org` association, `s` season | **live** |
-| `league`, `team`, `club`, `game`, `tournament` | see `SHARE_LINKS_PLAN.md` in the app repo | page exists, app side not wired |
+| Type | Coordinates |
+|---|---|
+| `player` | `id` numeric player id, `v` = `portrait`/`history`/`stats`, `fn`/`ln` name, `s` season (portrait only) |
+| `league` | `org` association, `id` group id, `v` = `table`/`schedule`/`contacts`/`ranking`/`stats`/`balance`, `tf` = `vr`/`rr`/`gesamt`, `n` name |
+| `team` | `org`, `g` group id, `id` team id, `v` = `schedule`/`lineup`, `tf`, `n` |
+| `club` | `org`, `id` club number, `v` = `teams`/`schedule`/`lineups`/`meldung`/`contacts`/`locations`, `ag` age group (with `v=meldung`), `tf`, `n` |
+| `game` | `id` match id |
+| `tournament` | `org`, optional `id` tournament, optional `comp` competition; the shape follows which ids are present |
 
-Example:
+Examples:
 
 ```
-https://alexos1998.github.io/myTTCompanion-links/s/player/?pid=NU1234567&id=98765&v=portrait&n=Max+Mustermann
+.../s/player/?id=98765&v=portrait&fn=Max&ln=Mustermann
+.../s/league/?org=TTVN&id=526040&v=table&tf=vr&n=Verbandsliga+Nord
+.../s/team/?org=TTVN&g=526040&id=3128198&v=schedule
+.../s/club/?org=TTVN&id=4460300&v=meldung&ag=Herren&tf=vr
+.../s/game/?id=15753895
+.../s/tournament/?org=TTVN&id=4711
 ```
 
-The pages never interpret the coordinates beyond building the two outbound
-links, so a newer app can ship new parameters without touching this repo.
+The pages never interpret the coordinates beyond building the two outbound links,
+so a newer app can ship new parameters without touching this repo.
 
 ## What a page does
 

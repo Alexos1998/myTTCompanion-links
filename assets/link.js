@@ -71,28 +71,87 @@ function clickTtPlayerId(numericId) {
 }
 
 /**
+ * The current click-tt season token, e.g. "26--27". Mirrors `SeasonHelper` in
+ * the app: the season runs from July to June.
+ */
+function currentSeason() {
+  const now = new Date();
+  const start = now.getMonth() + 1 >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+  const two = (year) => String(year % 100).padStart(2, '0');
+  return `${two(start)}--${two(start + 1)}`;
+}
+
+/**
  * The equivalent page on mytischtennis.de, or null when the coordinates cannot
- * address a public page. Only the types that are actually wired return a URL.
+ * address a public page.
+ *
+ * These are the same URLs the app fetches, minus the `?_data=` loader suffix,
+ * so a recipient without the app still sees the thing that was shared. `XXXX`
+ * is the wildcard the site itself accepts where a name would go.
  */
 function webUrl(type, params) {
-  if (type === 'player') {
-    const id = Number(params.get('id'));
-    if (!Number.isInteger(id) || id <= 0) return null;
+  const org = params.get('org');
+  const id = params.get('id');
+  const season = params.get('s') || currentSeason();
+  const tf = params.get('tf') || 'gesamt';
+  const clickTt = (path) => `https://www.mytischtennis.de/click-tt/${path}`;
 
-    // Same shape the app fetches, minus the `?_data=` loader suffix. `XXXX` is
-    // what the site itself accepts as a wildcard association segment.
-    const season = params.get('s') || 'aktuell';
-    return `https://www.mytischtennis.de/click-tt/XXXX/${season}/spieler/${clickTtPlayerId(id)}/spielerportrait/single`;
+  if (type === 'player') {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) return null;
+    return clickTt(`XXXX/${season}/spieler/${clickTtPlayerId(numericId)}/spielerportrait/single`);
   }
 
+  if (!org) return null;
+
+  if (type === 'league' && id) {
+    const view = params.get('v');
+    const group = `${org}/${season}/ligen/-/gruppe/${id}`;
+    if (view === 'schedule') return clickTt(`${group}/spielplan/${tf}`);
+    if (view === 'ranking') return clickTt(`${group}/gruppen-ranglisten/spieler/${tf}`);
+    if (view === 'stats') return clickTt(`${group}/mannschaftsmeldungen/${tf === 'gesamt' ? 'vr' : tf}`);
+    if (view === 'balance') return clickTt(`${group}/bilanzuebersichten/${tf}`);
+    // Contacts is the one league page that takes a placeholder segment.
+    if (view === 'contacts') return clickTt(`${org}/${season}/ligen/XXX/gruppe/${id}/kontakte`);
+    return clickTt(`${group}/tabelle/${tf}`);
+  }
+
+  if (type === 'team' && id && params.get('g')) {
+    const team = `${org}/${season}/ligen/-/gruppe/${params.get('g')}/mannschaft/${id}/XXX`;
+    return clickTt(params.get('v') === 'lineup' ? `${team}/spielerbilanzen/${tf}` : `${team}/spielplan/${tf}`);
+  }
+
+  if (type === 'club' && id) {
+    const club = `${org}/${season}/verein/${id}/XXX`;
+    const view = params.get('v');
+    if (view === 'schedule') return clickTt(`${club}/spielplan`);
+    if (view === 'lineups') return clickTt(`${club}/meldungen`);
+    if (view === 'meldung' && params.get('ag')) {
+      return clickTt(`${club}/meldungendetails/${encodeURIComponent(params.get('ag'))}/${tf === 'gesamt' ? 'vr' : tf}`);
+    }
+    if (view === 'contacts' || view === 'locations') return clickTt(`${club}/info`);
+    return clickTt(`${club}/mannschaften`);
+  }
+
+  if (type === 'tournament') {
+    const competition = params.get('comp');
+    if (competition) return clickTt(`${org}/konkurrenz/${competition}`);
+    if (id) return clickTt(`${org}/turnier/${id}`);
+    return clickTt(`${org}/turnierkalender`);
+  }
+
+  // A match report has no public click-tt page: the app reads it from the live
+  // API, which answers JSON only.
   return null;
 }
 
-/** Fills in the entity name when the link carries one, so the page is not anonymous. */
+/**
+ * Fills in the entity name when the link carries one, so the page is not
+ * anonymous. A player carries it split (`fn`/`ln`, because the app needs both
+ * halves), everything else as one `n`.
+ */
 function applyName(params) {
-  const name = [params.get('fn'), params.get('ln')]
-    .filter(Boolean)
-    .join(' ')
+  const name = (params.get('n') || [params.get('fn'), params.get('ln')].filter(Boolean).join(' '))
     .trim()
     .slice(0, 80);
   if (!name) return;
