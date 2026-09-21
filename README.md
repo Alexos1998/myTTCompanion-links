@@ -4,7 +4,7 @@ Static landing pages for the share links of the app **myTischtennis Companion**
 (`de.ajeddeloh.myttcompanion`). Served by GitHub Pages at
 
 ```
-https://alexos1998.github.io/myTTCompanion-links/
+https://myttcompanion.app/
 ```
 
 There is no backend. A share link carries coordinates, not content: the app
@@ -14,7 +14,7 @@ where the app is not installed.
 ## Link grammar
 
 ```
-https://alexos1998.github.io/myTTCompanion-links/s/<type>/?<coordinates>
+https://myttcompanion.app/s/<type>/?<coordinates>
 ```
 
 `<type>` is a real directory with its own `index.html`, so the host answers 200
@@ -72,27 +72,41 @@ handles by revealing the fallback.
 With JavaScript disabled nothing sets the state and the buttons are visible: the
 markup defaults to the safe side.
 
-The `/myTTCompanion-links` prefix is stripped when building the scheme URL, so the
-app parses one grammar regardless of transport and moving the site never changes
-the parser.
+The site is served at the root of its own domain, so the path a page sees is
+already the grammar the app parses. Nothing is stripped when building the scheme
+URL, and moving the site to another host never changes the parser.
 
-## Why the well-known files are not in this repo
+## The well-known files
 
-Android fetches `https://alexos1998.github.io/.well-known/assetlinks.json` and
-Apple fetches `https://alexos1998.github.io/.well-known/apple-app-site-association`.
-Neither respects a subpath, so a **project** page cannot host them. They live in
-the sibling repo `Alexos1998.github.io` (a GitHub *user* page, which serves at
-the domain root). Verification is per host, so the files there also cover the
-`/myTTCompanion-links/s/` paths of this repo.
+Android fetches `https://myttcompanion.app/.well-known/assetlinks.json` and Apple
+fetches `https://myttcompanion.app/.well-known/apple-app-site-association`.
+Neither respects a subpath, which is why a project page on `*.github.io` could
+not host them: it serves under `/<repo>/`. The custom domain serves this repo at
+the domain root, so both files live here, next to `.nojekyll`.
 
-`.nojekyll` is present in both repos: Jekyll drops every path starting with a
-dot, which silently 404s `.well-known/` and is the usual reason App Links look
-broken on Pages.
+`.nojekyll` is mandatory: Jekyll drops every path starting with a dot, which
+silently 404s `.well-known/` and is the usual reason App Links look broken on
+Pages.
+
+`assetlinks.json` lists the release package with the **upload key** fingerprint
+and the debug package with the local debug-keystore fingerprint. Play App Signing
+re-signs the AAB, so before the first Play release the app-signing certificate's
+SHA-256 (Play Console, Test and release, Setup, App signing) has to be appended
+to the release entry, otherwise verification succeeds for sideloaded APKs and
+fails for every Play install.
+
+`apple-app-site-association` has no file extension and must not be served through
+a redirect: Apple's CDN refuses redirect chains. Team id `Y4D78YTQH2`, bundle id
+`de.ajeddeloh.myttcompanion`, paths `/s/*`. Universal Links additionally need
+`Runner.entitlements` in the app repo, which does not exist yet.
 
 ## Deploying
 
-Settings, Pages, Source "Deploy from a branch", branch `main`, folder `/ (root)`.
-No build step, no Jekyll.
+Settings, Pages, Source "Deploy from a branch", branch `main`, folder `/ (root)`,
+custom domain `myttcompanion.app` (the `CNAME` file), Enforce HTTPS on. DNS is a
+single Cloudflare `CNAME` on the apex pointing at `alexos1998.github.io`, DNS only
+(no proxy: the orange cloud blocks GitHub's certificate issuance). No build step,
+no Jekyll.
 
 ## Testing without waiting for verification
 
@@ -103,9 +117,18 @@ adb shell am start -a android.intent.action.VIEW \
 
 # https link against the debug package explicitly
 adb shell am start -a android.intent.action.VIEW \
-  -d "https://alexos1998.github.io/myTTCompanion-links/s/player/?pid=NU1234567" \
+  -d "https://myttcompanion.app/s/player/?pid=NU1234567" \
   de.ajeddeloh.myttcompanion.debug
 
 # Verification state once assetlinks.json is live
 adb shell pm get-app-links de.ajeddeloh.myttcompanion
+
+# Are the well-known files actually served?
+curl -s https://myttcompanion.app/.well-known/assetlinks.json
+curl -s https://myttcompanion.app/.well-known/apple-app-site-association
+
+# What Android itself consults at install time
+curl -s "https://digitalassetlinks.googleapis.com/v1/statements:list\
+?source.web.site=https://myttcompanion.app\
+&relation=delegate_permission/common.handle_all_urls"
 ```

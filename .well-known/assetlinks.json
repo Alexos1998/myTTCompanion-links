@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.ajeddeloh.myttcompanion",
+      "sha256_cert_fingerprints": [
+        "79:DE:4A:E8:50:EE:59:69:D4:CA:96:57:96:7E:99:D5:45:40:82:98:53:63:9C:96:B9:12:11:1F:CD:11:5B:05"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.ajeddeloh.myttcompanion.debug",
+      "sha256_cert_fingerprints": [
+        "B8:7E:36:EC:7F:1B:EE:5B:A7:4D:6F:A1:BD:92:0A:40:3B:79:88:56:BA:E5:B1:97:D3:A1:29:89:AA:5E:AA:87"
+      ]
+    }
+  }
+]

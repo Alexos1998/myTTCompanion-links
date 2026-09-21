@@ -1,7 +1,7 @@
 /*
  * Share-link landing page logic.
  *
- * A share link is `https://alexos1998.github.io/myTTCompanion-links/s/<type>/?<coordinates>`.
+ * A share link is `https://myttcompanion.app/s/<type>/?<coordinates>`.
  * When the app is installed and the host is verified, Android and iOS open the app
  * and this page is never rendered. Everything here is therefore the *fallback*: the
  * app is missing, App-Links verification has not happened yet, or the link was
@@ -18,9 +18,6 @@
  *   2. look at the same thing on mytischtennis.de
  *   3. install the app
  */
-
-/** GitHub project page prefix. Not part of the link grammar the app parses. */
-const BASE_PATH = '/myTTCompanion-links';
 
 const APP_SCHEME = 'myttcompanion';
 const DEBUG_SCHEME = 'myttcompanion-debug';
@@ -41,12 +38,13 @@ function coordinates() {
 /**
  * The same link as a custom-scheme URL: `myttcompanion://s/player/?org=...`.
  *
- * The hosting prefix is stripped, so the app sees one grammar (`s/<type>/?...`)
- * whether the link arrived as an https App Link or as a custom scheme, and moving
- * the pages to another host or repo never changes what the app parses.
+ * The path is taken as it stands, so the app sees one grammar (`s/<type>/?...`)
+ * whether the link arrived as an https App Link or as a custom scheme. The site
+ * is served at the root of its own domain, so there is no hosting prefix in
+ * front of `s/` to strip.
  */
 function appUrl(scheme) {
-  const path = window.location.pathname.replace(BASE_PATH, '').replace(/^\/+/, '');
+  const path = window.location.pathname.replace(/^\/+/, '');
   return scheme + '://' + path + window.location.search;
 }
 
