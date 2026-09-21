@@ -157,8 +157,9 @@ function webUrl(type, params) {
  * silently showing one of them would be a different result than was shared.
  */
 function rankingUrl(params) {
-  const clubs = (params.get('cl') || '').split(',').filter(Boolean);
-  if (params.get('pl') || clubs.length > 1) return null;
+  // One repeated `cl` per club, so a club name in `cln` needs no separator.
+  const clubs = params.getAll('cl');
+  if (params.getAll('pl').length > 0 || clubs.length > 1) return null;
 
   const base = 'https://www.mytischtennis.de/rankings/andro-rangliste';
   const league = params.get('lg');
@@ -187,6 +188,10 @@ function rankingUrl(params) {
     if (clubId && org) {
       query.set('clubnr', clubId);
       query.set('fednickname', org);
+      // The app sends the name along as the search-box echo; harmless, and it
+      // keeps this URL identical to the one the app fetches.
+      const name = params.getAll('cln')[0];
+      if (name) query.set('clubnr-search', name);
     }
   }
 
