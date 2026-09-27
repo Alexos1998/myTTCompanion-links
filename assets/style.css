@@ -194,6 +194,48 @@ a.button.debug {
   color: var(--muted);
 }
 
+/* Content pages (Datenschutz, Support). The share pages are one short card
+   meant to be read in a glance; these are documents, so they get a wider
+   column and body text in the reading colour instead of the muted one `p`
+   carries by default. */
+main.page {
+  max-width: 640px;
+}
+
+.prose p,
+.prose li {
+  color: var(--text);
+}
+
+.prose h2 {
+  margin: 28px 0 8px;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.prose h2:first-of-type {
+  margin-top: 20px;
+}
+
+.prose ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+
+.prose li {
+  margin-bottom: 6px;
+}
+
+.prose a {
+  color: var(--primary-dim);
+}
+
+.prose .updated {
+  margin: 24px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 footer {
   margin-top: 20px;
   text-align: center;

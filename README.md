@@ -1,11 +1,24 @@
-# myTTCompanion-links
+# myttcompanion-web
 
-Static landing pages for the share links of the app **myTischtennis Companion**
-(`de.ajeddeloh.myttcompanion`). Served by GitHub Pages at
+The whole public web presence of the app **myTischtennis Companion**
+(`de.ajeddeloh.myttcompanion`), served by GitHub Pages at
 
 ```
 https://myttcompanion.app/
 ```
+
+```
+/                    landing page
+/s/<type>/           share-link pages, one directory per type
+/datenschutz/        privacy policy (store listings link here)
+/support/            support page (store listings link here)
+/.well-known/        assetlinks.json, apple-app-site-association
+```
+
+Datenschutz and Support used to live in `myTTCompanion-legal` and
+`myTTCompanion-support` on `*.github.io`. Those repos now serve nothing but a
+redirect here, and stay published because the old URLs are in the wild - a
+`github.io` path can never be repointed, an own domain can.
 
 There is no backend. A share link carries coordinates, not content: the app
 refetches everything from mytischtennis.de, and this site only answers the case
@@ -88,17 +101,27 @@ the domain root, so both files live here, next to `.nojekyll`.
 silently 404s `.well-known/` and is the usual reason App Links look broken on
 Pages.
 
-`assetlinks.json` lists the release package with the **upload key** fingerprint
-and the debug package with the local debug-keystore fingerprint. Play App Signing
-re-signs the AAB, so before the first Play release the app-signing certificate's
-SHA-256 (Play Console, Test and release, Setup, App signing) has to be appended
-to the release entry, otherwise verification succeeds for sideloaded APKs and
-fails for every Play install.
+`assetlinks.json` lists three certificates, because verification compares against
+the one the *installed* app carries:
+
+| Package | SHA-256 | Which key |
+|---|---|---|
+| `de.ajeddeloh.myttcompanion` | `BA:0C:D2:DA:…` | Play app signing, i.e. every Play install |
+| `de.ajeddeloh.myttcompanion` | `79:DE:4A:E8:…` | upload key, i.e. a locally built release APK |
+| `de.ajeddeloh.myttcompanion.debug` | `F9:F9:F8:AB:…` | `~/.android/debug.keystore` |
+
+Listing only the upload key is the classic failure: verification passes for a
+sideloaded APK and fails for every Play install, so Android hands the link to
+the browser, which lands here and bounces into the app through the custom
+scheme - the "browser opens first" symptom. Regenerating `debug.keystore`
+invalidates the third entry; re-read it with
+`keytool -list -v -keystore ~/.android/debug.keystore -storepass android`.
 
 `apple-app-site-association` has no file extension and must not be served through
 a redirect: Apple's CDN refuses redirect chains. Team id `Y4D78YTQH2`, bundle id
 `de.ajeddeloh.myttcompanion`, paths `/s/*`. Universal Links additionally need
-`Runner.entitlements` in the app repo, which does not exist yet.
+`Runner.entitlements` in the app repo, which now exists - what is still missing
+there is the Associated Domains capability on the App ID.
 
 ## Deploying
 
