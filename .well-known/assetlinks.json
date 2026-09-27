@@ -5,6 +5,7 @@
       "namespace": "android_app",
       "package_name": "de.ajeddeloh.myttcompanion",
       "sha256_cert_fingerprints": [
+        "BA:0C:D2:DA:91:32:CB:7B:8F:E0:FB:E3:83:79:72:D1:09:BC:85:DD:22:A1:3C:A9:6F:BC:87:BF:DE:0D:15:16",
         "79:DE:4A:E8:50:EE:59:69:D4:CA:96:57:96:7E:99:D5:45:40:82:98:53:63:9C:96:B9:12:11:1F:CD:11:5B:05"
       ]
     }
@@ -15,7 +16,7 @@
       "namespace": "android_app",
       "package_name": "de.ajeddeloh.myttcompanion.debug",
       "sha256_cert_fingerprints": [
-        "B8:7E:36:EC:7F:1B:EE:5B:A7:4D:6F:A1:BD:92:0A:40:3B:79:88:56:BA:E5:B1:97:D3:A1:29:89:AA:5E:AA:87"
+        "F9:F9:F8:AB:91:F0:F6:F4:18:E4:52:B1:76:37:EC:06:68:FF:AE:D9:FD:6A:67:BA:DF:CB:71:48:AF:8F:81:00"
       ]
     }
   }
