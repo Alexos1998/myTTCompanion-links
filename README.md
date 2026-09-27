@@ -1,6 +1,6 @@
 # myttcompanion-web
 
-The whole public web presence of the app **myTischtennis Companion**
+The whole public web presence of the app **myTT Companion**
 (`de.ajeddeloh.myttcompanion`), served by GitHub Pages at
 
 ```

@@ -214,7 +214,7 @@ function applyName(params) {
     target.textContent = name;
     target.hidden = false;
   }
-  document.title = name + ' - myTischtennis Companion';
+  document.title = name + ' - myTT Companion';
 }
 
 /**

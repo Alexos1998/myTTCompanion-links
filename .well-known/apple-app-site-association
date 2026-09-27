@@ -9,7 +9,7 @@
         "components": [
           {
             "/": "/s/*",
-            "comment": "Share links of myTischtennis Companion"
+            "comment": "Share links of myTT Companion"
           }
         ]
       }
