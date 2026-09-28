@@ -36,6 +36,20 @@ function coordinates() {
 }
 
 /**
+ * Whether this is an iPhone, iPad or iPod.
+ *
+ * User agent sniffing, because the question is genuinely "which store does this
+ * device use", which no feature test answers. iPadOS reports itself as a Mac,
+ * hence the touch-point check: a Mac with a touchscreen does not exist, so a
+ * "Macintosh" that reports touch points is an iPad.
+ */
+function isApple() {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return true;
+  return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+}
+
+/**
  * The same link as a custom-scheme URL: `myttcompanion://s/player/?org=...`.
  *
  * The path is taken as it stands, so the app sees one grammar (`s/<type>/?...`)
@@ -269,8 +283,19 @@ function wire() {
   const open = document.querySelector('[data-action="open-app"]');
   if (open) open.href = appUrl(APP_SCHEME);
 
+  // "App installieren" leads to Google Play, and there is nowhere else to send
+  // an iPhone: the iOS build ships through TestFlight only, which has no public
+  // link. So the button is removed there rather than promising a store page the
+  // visitor cannot use. Once the app is on the App Store this becomes a
+  // per-platform store URL instead of a hidden button.
   const store = document.querySelector('[data-action="install"]');
-  if (store) store.href = STORE_URL;
+  if (store) {
+    if (isApple()) {
+      store.hidden = true;
+    } else {
+      store.href = STORE_URL;
+    }
+  }
 
   const web = document.querySelector('[data-action="open-web"]');
   const target = webUrl(type, params);

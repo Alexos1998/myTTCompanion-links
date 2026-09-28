@@ -71,7 +71,10 @@ the app is not installed, so the page switches to its fallback:
 1. **In der App öffnen** retries the same scheme link.
 2. **Auf mytischtennis.de ansehen** builds the equivalent public page, currently
    for `player` only.
-3. **App installieren** goes to the Play Store listing.
+3. **App installieren** goes to the Play Store listing, and is hidden on iOS:
+   that build ships through TestFlight only, so there is no store page to send an
+   iPhone to. When the app reaches the App Store this becomes a per-platform
+   store URL instead of a hidden button.
 4. **In der Debug-App öffnen** appears only when the URL ends in `#debug` and uses
    the `myttcompanion-debug://` scheme, so a test link can address the debug build
    while both variants are installed. With `#debug` the automatic launch targets
